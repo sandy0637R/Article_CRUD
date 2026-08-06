@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-
+use Illuminate\Support\Facades\Gate;
 class ArticleController extends Controller
 {
     // Get all articles
@@ -23,44 +23,47 @@ class ArticleController extends Controller
 
     // Create article
     public function store(Request $request)
-    {
-        $request->validate([
-            'title'   => 'required|max:255',
-            'content' => 'required',
-            'user_id' => 'required|exists:users,id',
-            'image'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ]);
-
-        $article = new Article();
-
-        $article->title = $request->title;
-        $article->content = $request->content;
-        $article->user_id = $request->user_id;
-        $article->slug = Str::slug($request->title);
+{
+    $request->validate([
+        'title'   => 'required|max:255',
+        'content' => 'required',
+        'image'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
 
 
-        if ($request->hasFile('image')) {
+    $article = new Article();
 
-            $imageName = time() . '.' . $request->image->extension();
+    $article->title = $request->title;
+    $article->content = $request->content;
 
-            $request->image->move(
-                public_path('images'),
-                $imageName
-            );
+    // Automatically get logged-in user
+    $article->user_id = $request->user()->id;
 
-            $article->image = $imageName;
-        }
+    $article->slug = Str::slug($request->title);
 
 
-        $article->save();
+    if ($request->hasFile('image')) {
 
+        $imageName = time() . '.' . $request->image->extension();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Article created successfully',
-            'data' => $article
-        ], 201);
+        $request->image->move(
+            public_path('images'),
+            $imageName
+        );
+
+        $article->image = $imageName;
     }
+
+
+    $article->save();
+
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Article created successfully',
+        'data' => $article
+    ], 201);
+}
 
 
     // Get single article
@@ -81,18 +84,17 @@ class ArticleController extends Controller
     {
         $article = Article::findOrFail($id);
 
-
+        Gate::authorize('update', $article);
         $request->validate([
             'title'   => 'required|max:255',
             'content' => 'required',
-            'user_id' => 'required|exists:users,id',
             'image'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
 
         $article->title = $request->title;
         $article->content = $request->content;
-        $article->user_id = $request->user_id;
+        
         $article->slug = Str::slug($request->title);
 
 
@@ -134,7 +136,7 @@ class ArticleController extends Controller
     public function destroy(int $id)
     {
         $article = Article::findOrFail($id);
-
+        Gate::authorize('delete', $article);
 
         if ($article->image && file_exists(public_path('images/'.$article->image))) {
 
