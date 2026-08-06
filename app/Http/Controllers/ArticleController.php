@@ -34,7 +34,7 @@ class ArticleController extends Controller
     $article = new Article();
 
     $article->title = $request->title;
-    $article->content = $request->content;
+    $article->content = $request->input('content');
 
     // Automatically get logged-in user
     $article->user_id = $request->user()->id;
@@ -93,7 +93,7 @@ class ArticleController extends Controller
 
 
         $article->title = $request->title;
-        $article->content = $request->content;
+        $article->content = $request->input('content');
         
         $article->slug = Str::slug($request->title);
 
