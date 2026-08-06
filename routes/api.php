@@ -13,8 +13,11 @@ Route::get('/user', function () {
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 // ->middleware('auth:sanctum');
+Route::apiResource('articles', ArticleController::class)
+    ->only(['index', 'show']);
+
+// Protected
 Route::middleware('auth:sanctum')->group(function () {
-
-    Route::resource('articles', ArticleController::class);
-
+    Route::apiResource('articles', ArticleController::class)
+        ->only(['store', 'update', 'destroy']);
 });
