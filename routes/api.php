@@ -5,9 +5,10 @@ use Illuminate\Support\Facades\Route;
 use App\Models\User;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 
-Route::get('/user', function () {
-    return User::all();
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    Route::apiResource('users', UserController::class);
 });
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -17,7 +18,7 @@ Route::apiResource('articles', ArticleController::class)
     ->only(['index', 'show']);
 
 // Protected
-Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum','admin'])->group(function () {
     Route::apiResource('articles', ArticleController::class)
         ->only(['store', 'update', 'destroy']);
 });

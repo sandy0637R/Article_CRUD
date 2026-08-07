@@ -23,6 +23,7 @@ class AuthController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'role' => 'author',
         ]);
 
         // 3. Generate API token

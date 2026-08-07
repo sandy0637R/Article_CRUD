@@ -35,14 +35,19 @@ class ArticlePolicy
     /**
      * Determine whether the user can update the model.
      */
-   public function update(User $user, Article $article)
+  public function update(User $user, Article $article): bool
 {
+    if ($user->role === 'admin') {
+        return true;
+    }
+
     return $user->id === $article->user_id;
 }
-
-
-public function delete(User $user, Article $article)
+public function delete(User $user, Article $article):bool
 {
+    if( $user->role === 'admin') {
+        return true;
+    }
     return $user->id === $article->user_id;
 }
 
